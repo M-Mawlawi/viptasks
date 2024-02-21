@@ -1,0 +1,28 @@
+{% extends 'base.html' %} {%load static%} {% load i18n %} {%block title%}
+<title>Products | VIPTasks</title>
+{%endblock%} {%block style%}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+{%endblock%} {%block content%} {% regroup products by category as item_list %} {% for category in item_list %}
+<div class="card my-3">
+    <div class="card-header bg-light">
+        <h2 class="mb-0">{%trans "Kategorie"%} {{ category.grouper.name }}</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for item in category.list %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img class="card-img-top" src="/{{item.item_photo}}" alt="{{ item.name }}">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ item.name }}</h4>
+                        <p class="card-text">{{ item.price }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %} {%endblock%}

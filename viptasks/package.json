@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^4.2.1",
+    "react-leaflet-draw": "^0.20.4"
+  },
+  "devDependencies": {
+    "vite": "^4.4.11"
+  }
+}

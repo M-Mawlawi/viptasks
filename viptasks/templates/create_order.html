@@ -1,0 +1,112 @@
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP TASKS|Create Order</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sintony&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <h1 style="font-family: 'Sintony', sans-serif;">VIP <span style="color:#0E67EC;">TASKS</span></h1>
+    <h2>Create Order</h2>
+    {% csrf_token %} {% crispy order_item_form %}
+
+    <script>
+        document.getElementById('id_item').addEventListener('change', async function(event) {
+            const itemId = event.target.value;
+            const specificationSelect = document.getElementById('id_specification');
+
+            // Clear the current specifications
+            specificationSelect.innerHTML = '<option value="">Select a Specification (if applicable)</option>';
+
+            if (!itemId) {
+                return;
+            }
+
+            // Fetch the associated specifications from the server
+            const response = await fetch(`/api/items/${itemId}/specifications/`);
+            const specifications = await response.json();
+
+            // Add the associated specifications to the select element
+            for (const specification of specifications) {
+                const option = document.createElement('option');
+                option.value = specification.id;
+                option.text = `${specification.Specification} (${specification.price})`;
+                specificationSelect.add(option);
+            }
+        });
+    </script>
+    <script>
+        const orderForm = document.getElementById('order-form');
+        const panelContainer = document.getElementById('panel-container');
+
+        orderForm.addEventListener('submit', async(event) => {
+            event.preventDefault();
+            const formData = new FormData(orderForm);
+            const response = await fetch(orderForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+            const responseData = await response.json();
+            if (responseData.success) {
+                const orderDetails = responseData.order;
+                const panelContent = `
+            <h2>Order Details</h2>
+            <p>Item: ${orderDetails.item}</p>
+            <p>Specification: ${orderDetails.specification}</p>
+            <p>Price: ${orderDetails.price}</p>
+            <form id="phone-address-form">
+                <label for="phone">Phone Number:</label>
+                <input type="text" name="phone" id="phone">
+                <label for="address">Address:</label>
+                <textarea name="address" id="address"></textarea>
+                <button type="submit">Submit</button>
+            </form>
+        `;
+                panelContainer.innerHTML = panelContent;
+
+                const phoneAddressForm = document.getElementById('phone-address-form');
+                phoneAddressForm.addEventListener('submit', async(event) => {
+                    event.preventDefault();
+                    const phone = document.getElementById('phone').value;
+                    const address = document.getElementById('address').value;
+                    const orderData = {
+                        order_id: orderDetails.id,
+                        phone: phone,
+                        address: address,
+                    };
+                    const response = await fetch('/update-order/', {
+                        method: 'POST',
+                        body: JSON.stringify(orderData),
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    });
+                    const responseData = await response.json();
+                    if (responseData.success) {
+                        panelContainer.innerHTML = '<p>Order submitted successfully!</p>';
+                    } else {
+                        // Show an error message
+                    }
+                });
+            } else {
+                // Show an error message
+            }
+        });
+    </script>
+
+
+</body>
+
+</html>
